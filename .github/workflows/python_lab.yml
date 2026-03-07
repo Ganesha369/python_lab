@@ -1,8 +1,11 @@
 name: Lab Module Provisioner
 on:
   schedule:
-    # Triggers at various intervals throughout the IST day
-    - cron: '30 4,7,10,13,16 * * *' 
+    # Triggering at 8:30am, 12:45pm, 4:39pm, 6:47pm, 9:30pm (IST)
+    - cron: '0 3,16 * * *'    # 8:30 AM & 9:30 PM IST
+    - cron: '15 7 * * *'      # 12:45 PM IST
+    - cron: '9 11 * * *'      # 4:39 PM IST
+    - cron: '17 13 * * *'     # 6:47 PM IST
   workflow_dispatch: 
 
 jobs:
@@ -17,16 +20,11 @@ jobs:
           API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python3 -c "
-          import json, os, requests, random, re
+          import json, os, requests, re
           from datetime import datetime
 
-          # Randomization logic for resource management
-          if random.random() < 0.35:
-              print('Cycle optimization: No update required for this window.')
-              exit(0)
-
-          # This is the 'PROMPT' the AI follows:
-          prompt = 'Act as a Senior Python Developer and mid level Developeer. Create a unique, functional Python project for a specific industry (Finance, Healthcare, etc). Provide clean code and a professional README in very simple English. Break down the project, its infrastructure, and tech stack. FORMAT: ---CODE--- (code) ---README--- (description)'
+          # Professional prompt for industry-specific Python applications
+          prompt = 'Act as a Senior Python Developer. Create a specialized coding module for a specific industry. Provide clean code and a professional README including Tech Stack and Business Value. FORMAT: ---CODE--- (code) ---README--- (description)'
           
           url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={os.getenv(\"API_KEY\")}'
           resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
