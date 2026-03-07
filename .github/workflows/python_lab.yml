@@ -1,0 +1,56 @@
+name: Lab Module Provisioner
+on:
+  schedule:
+    # Triggers at various intervals throughout the IST day
+    - cron: '30 4,7,10,13,16 * * *' 
+  workflow_dispatch: 
+
+jobs:
+  update-repository:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Current Workspace
+        uses: actions/checkout@v4
+      
+      - name: Generate Engineering Module
+        env:
+          API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 -c "
+          import json, os, requests, random, re
+          from datetime import datetime
+
+          # Randomization logic for resource management
+          if random.random() < 0.35:
+              print('Cycle optimization: No update required for this window.')
+              exit(0)
+
+          # This is the 'PROMPT' the AI follows:
+          prompt = 'Act as a Senior Python Developer and mid level Developeer. Create a unique, functional Python project for a specific industry (Finance, Healthcare, etc). Provide clean code and a professional README in very simple English. Break down the project, its infrastructure, and tech stack. FORMAT: ---CODE--- (code) ---README--- (description)'
+          
+          url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={os.getenv(\"API_KEY\")}'
+          resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
+          data = resp.json()
+          
+          text = data['candidates'][0]['content']['parts'][0]['text']
+          code = re.search(r'---CODE---(.*?)---README---', text, re.DOTALL)
+          readme = re.search(r'---README---(.*)', text, re.DOTALL)
+
+          if code and readme:
+              folder = 'module_' + datetime.now().strftime('%Y%m%d_%H%M')
+              os.makedirs(folder, exist_ok=True)
+              with open(f'{folder}/main.py', 'w') as f: f.write(code.group(1).strip().strip('`python').strip('```'))
+              with open(f'{folder}/README.md', 'w') as f: f.write(readme.group(1).strip())
+          "
+
+      - name: Deploy Changes
+        run: |
+          git config --local user.email "provisioner-bot@github.com"
+          git config --local user.name "System Provisioner"
+          if [ -n \"$(git status --porcelain)\" ]; then
+            git add .
+            git commit -m "docs: update laboratory modules and technical documentation"
+            git push
+          else
+            echo "No changes detected."
+          fi
