@@ -4,7 +4,7 @@ on:
     - cron: '0 3,16 * * *'
     - cron: '15 7 * * *'
     - cron: '9 11 * * *'
-    - cron: '15 18 * * *'  # 11:45 PM IST (approx 3 minutes from now)
+    - cron: '15 18 * * *' 
   workflow_dispatch: 
 
 jobs:
@@ -40,8 +40,8 @@ jobs:
               if not api_key:
                   raise ValueError('GEMINI_API_KEY is missing from GitHub Secrets')
 
-              # UPDATED: Using the Gemini 3 Flash Preview Model
-              url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={api_key}'
+              # STABLE MODEL: Using gemini-1.5-flash to avoid 503 errors
+              url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}'
               
               resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
               data = resp.json()
@@ -78,8 +78,8 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add .
           if git diff --quiet && git diff --staged --quiet; then
-            echo "No changes to commit"
+            echo \"No changes to commit\"
           else
-            git commit -m "docs: update laboratory modules"
+            git commit -m \"docs: update laboratory modules\"
             git push
           fi
