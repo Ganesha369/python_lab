@@ -4,7 +4,7 @@ on:
     - cron: '0 3,16 * * *'
     - cron: '15 7 * * *'
     - cron: '9 11 * * *'
-    - cron: '15 18 * * *' 
+    - cron: '15 19 * * *' # Set to run at 12:45 AM IST (Tonight)
   workflow_dispatch: 
 
 jobs:
@@ -37,17 +37,15 @@ jobs:
           
           try:
               api_key = os.getenv('API_KEY')
-              if not api_key:
-                  raise ValueError('GEMINI_API_KEY is missing from GitHub Secrets')
-
-              # STABLE MODEL: Using gemini-1.5-flash to avoid 503 errors
+              # USING STABLE 1.5 FLASH: Best for reliability during high-traffic events
               url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}'
               
               resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
               data = resp.json()
               
               if 'candidates' not in data:
-                  print('API Error Response:', json.dumps(data, indent=2))
+                  print('!!! API ERROR !!!')
+                  print(json.dumps(data, indent=2))
                   exit(1)
 
               text = data['candidates'][0]['content']['parts'][0]['text']
@@ -57,25 +55,22 @@ jobs:
               if code_match and readme_match:
                   folder = 'module_' + ist_time.strftime('%Y%m%d_%H%M')
                   os.makedirs(folder, exist_ok=True)
-                  
                   clean_code = code_match.group(1).strip().replace('\\\python', '').replace('\\\', '')
-                  
-                  with open(f'{folder}/main.py', 'w') as f: 
-                      f.write(clean_code)
-                  with open(f'{folder}/README.md', 'w') as f: 
-                      f.write(readme_match.group(1).strip())
-                  print(f'Successfully created {folder} at {ist_time}')
+                  with open(f'{folder}/main.py', 'w') as f: f.write(clean_code)
+                  with open(f'{folder}/README.md', 'w') as f: f.write(readme_match.group(1).strip())
+                  print(f'Successfully created {folder}')
               else:
-                  print('Regex markers not found. Output received from AI:', text[:200])
+                  print('Regex markers not found. Full response saved to logs.')
+                  print(text[:500])
           except Exception as e:
-              print(f'Error occurred: {e}')
+              print(f'Error: {e}')
               exit(1)
           "
 
       - name: Deploy Changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "github-actions[bot]"
+          git config --local user.email \"action@github.com\"
+          git config --local user.name \"github-actions[bot]\"
           git add .
           if git diff --quiet && git diff --staged --quiet; then
             echo \"No changes to commit\"
