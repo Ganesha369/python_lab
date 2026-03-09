@@ -1,85 +1,71 @@
-name: Lab Module Provisioner
+name: Portfolio Architect
 on:
   schedule:
-    - cron: '0 3,16 * * *'
-    - cron: '15 7 * * *'
-    - cron: '9 11 * * *'
-    - cron: '15 18 * * *'  # 11:45 PM IST (approx 3 minutes from now)
+    - cron: '30 2 * * *'  # ~8:00 AM IST
+    - cron: '0 6 * * *'   # ~11:30 AM IST
+    - cron: '15 10 * * *' # ~3:45 PM IST
+    - cron: '45 14 * * *' # ~8:15 PM IST
   workflow_dispatch: 
 
 jobs:
-  update-repository:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - name: Fetch Current Workspace
-        uses: actions/checkout@v4
-      
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
-        run: pip install requests
-
-      - name: Generate Engineering Module
+      - name: Professional Generator
         env:
           API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          MY_NAME: "Ganesha"
+          MY_EMAIL: "ganesha.am.369@gmail.com"
         run: |
           python3 -c "
-          import json, os, requests, re
-          from datetime import datetime, timedelta
-
-          ist_time = datetime.utcnow() + timedelta(hours=5, minutes=30)
-          prompt = 'Act as a Senior Python Developer. Create a specialized coding module for a specific industry. Provide clean code and a professional README including Tech Stack and Business Value. FORMAT: ---CODE--- (code) ---README--- (description)'
+          import json, os, requests, re, time, random, subprocess
+          from datetime import datetime
           
+          time.sleep(random.randint(0, 1200))
+
+          topics = ['Fintech', 'HealthTech', 'Cybersecurity', 'Logistics', 'AI-Tools']
+          full_prompt = f'Act as a Senior Architect. Design a unique {random.choice(topics)} Python module. Provide: [NAME]slug-name[/NAME] [DESC]desc[/DESC] [CODE]code[/CODE] [README]readme[/README] [REQS]libs[/REQS]'
+
           try:
-              api_key = os.getenv('API_KEY')
-              if not api_key:
-                  raise ValueError('GEMINI_API_KEY is missing from GitHub Secrets')
+              url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
+              resp = requests.post(url, json={'contents': [{'parts':[{'text': full_prompt}]}]})
+              text = resp.json()['candidates'][0]['content']['parts'][0]['text']
 
-              # UPDATED: Using the Gemini 3 Flash Preview Model
-              url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={api_key}'
+              repo_name = re.search(r'\[NAME\](.*?)\[/NAME\]', text).group(1).strip().lower().replace(' ', '-')
+              repo_desc = re.search(r'\[DESC\](.*?)\[/DESC\]', text).group(1).strip()
+              code_body = re.search(r'\[CODE\](.*?)\[/CODE\]', text, re.DOTALL).group(1).strip()
+              readme_body = re.search(r'\[README\](.*?)\[/README\]', text, re.DOTALL).group(1).strip()
+              reqs_list = re.search(r'\[REQS\](.*?)\[/REQS\]', text, re.DOTALL).group(1).strip()
+
+              # MIT License Template
+              license_text = f'MIT License\n\nCopyright (c) {datetime.now().year} Ganesha\n\nPermission is hereby granted, free of charge...'
+
+              headers = {'Authorization': f'token {os.getenv(\"GH_TOKEN\")}', 'Accept': 'application/vnd.github.v3+json'}
+              create_resp = requests.post('https://api.github.com/user/repos', json={'name': repo_name, 'description': repo_desc, 'private': False}, headers=headers)
               
-              resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
-              data = resp.json()
-              
-              if 'candidates' not in data:
-                  print('API Error Response:', json.dumps(data, indent=2))
-                  exit(1)
-
-              text = data['candidates'][0]['content']['parts'][0]['text']
-              code_match = re.search(r'---CODE---(.*?)---README---', text, re.DOTALL)
-              readme_match = re.search(r'---README---(.*)', text, re.DOTALL)
-
-              if code_match and readme_match:
-                  folder = 'module_' + ist_time.strftime('%Y%m%d_%H%M')
-                  os.makedirs(folder, exist_ok=True)
+              if create_resp.status_code == 201:
+                  clone_url = create_resp.json()['clone_url'].replace('https://', f'https://{os.getenv(\"GH_TOKEN\")}@')
+                  os.makedirs(repo_name, exist_ok=True); os.chdir(repo_name)
+                  subprocess.run(['git', 'init', '-b', 'main'])
                   
-                  clean_code = code_match.group(1).strip().replace('\\\python', '').replace('\\\', '')
+                  with open('main.py', 'w') as f: f.write(code_body)
+                  with open('README.md', 'w') as f: f.write(readme_body)
+                  with open('requirements.txt', 'w') as f: f.write(reqs_list)
+                  with open('LICENSE', 'w') as f: f.write(license_text)
                   
-                  with open(f'{folder}/main.py', 'w') as f: 
-                      f.write(clean_code)
-                  with open(f'{folder}/README.md', 'w') as f: 
-                      f.write(readme_match.group(1).strip())
-                  print(f'Successfully created {folder} at {ist_time}')
-              else:
-                  print('Regex markers not found. Output received from AI:', text[:200])
-          except Exception as e:
-              print(f'Error occurred: {e}')
-              exit(1)
+                  subprocess.run(['git', 'config', '--global', 'user.name', os.getenv(\"MY_NAME\")])
+                  subprocess.run(['git', 'config', '--global', 'user.email', os.getenv(\"MY_EMAIL\")])
+                  
+                  subprocess.run(['git', 'remote', 'add', 'origin', clone_url])
+                  subprocess.run(['git', 'add', '.'])
+                  subprocess.run(['git', 'commit', '-m', 'Initial project bootstrap with MIT License'])
+                  subprocess.run(['git', 'push', '-u', 'origin', 'main'])
+                  print(f'Done! Created {repo_name}')
+          except Exception as e: print(f'Error: {e}')
           "
-
-      - name: Deploy Changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "github-actions[bot]"
-          git add .
-          if git diff --quiet && git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "docs: update laboratory modules"
-            git push
-          fi
