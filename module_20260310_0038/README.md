@@ -26,6 +26,3 @@
 *   **Haversine Integration:** Accurate distance calculation accounting for the Earth's curvature.
 *   **Extensible Vehicle Logic:** Easily add more vehicle types (drones, cargo bikes) by extending the `VehicleProfile`.
 *   **JSON-Ready Output:** The `RouteSummary` is serializable, making it ready for integration with modern REST APIs or React/Vue dashboards.
-
----
-*Developed by Senior Python Engineer - Production Grade Logistics Solutions.*
