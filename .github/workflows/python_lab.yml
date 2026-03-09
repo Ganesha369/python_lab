@@ -1,10 +1,10 @@
-[10-03-2026 02:02] Ganesha💲: name: Portfolio Architect
+name: Portfolio Architect
 on:
   schedule:
-    - cron: '30 2 * * *'  # ~8:00 AM IST
-    - cron: '0 6 * * *'   # ~11:30 AM IST
-    - cron: '15 10 * * *' # ~3:45 PM IST
-    - cron: '45 14 * * *' # ~8:15 PM IST
+    - cron: '30 2 * * *'
+    - cron: '0 6 * * *'
+    - cron: '15 10 * * *'
+    - cron: '45 14 * * *'
   workflow_dispatch: 
 
 jobs:
@@ -30,12 +30,12 @@ jobs:
           import json, os, requests, re, time, random, subprocess
           from datetime import datetime
           
-          time.sleep(random.randint(0, 600))
+          time.sleep(random.randint(0, 10))
 
           topics = ['Fintech Asset Tracker', 'HealthTech Portal', 'Cybersecurity Scanner', 'AI Logistics', 'SaaS Middleware']
           selected_topic = random.choice(topics)
           
-          full_prompt = f'Act as a Senior Architect. Design a Python project for: {selected_topic}. Provide: [NAME]slug-name[/NAME] [DESC]one-sentence-desc[/DESC] [CODE]code[/CODE] [README]readme[/README] [REQS]libs[/REQS]'
+          full_prompt = f'Act as a Senior Architect. Design a unique Python project for: {selected_topic}. Provide: [NAME]slug-name[/NAME] [DESC]one-sentence-desc[/DESC] [CODE]code[/CODE] [README]readme[/README] [REQS]libs[/REQS]'
 
           try:
               url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
@@ -58,30 +58,17 @@ jobs:
                   clone_url = create_resp.json()['clone_url'].replace('https://', f'https://{os.getenv(\"GH_TOKEN\")}@')
                   os.makedirs(repo_name, exist_ok=True)
                   os.chdir(repo_name)
-                  
-                  # Initialize Git
                   subprocess.run(['git', 'init', '-b', 'main'])
-                  
-                  # Create Files - FIXED SYNTAX HERE
-                  with open('main.py', 'w') as f:
-                      f.write(code_body)
-                  with open('README.md', 'w') as f:
-                      f.write(readme_body)
-                  with open('requirements.txt', 'w') as f:
-                      f.write(reqs_list)
-                  with open('LICENSE', 'w') as f:
-                      f.write(license_text)
-                  
-                  # Set Identity
+                  with open('main.py', 'w') as f: f.write(code_body)
+                  with open('README.md', 'w') as f: f.write(readme_body)
+                  with open('requirements.txt', 'w') as f: f.write(reqs_list)
+                  with open('LICENSE', 'w') as f: f.write(license_text)
                   subprocess.run(['git', 'config', '--global', 'user.name', os.getenv(\"MY_NAME\")])
                   subprocess.run(['git', 'config', '--global', 'user.email', os.getenv(\"MY_EMAIL\")])
-                  
-                  # Push to GitHub
                   subprocess.run(['git', 'remote', 'add', 'origin', clone_url])
-[10-03-2026 02:02] Ganesha💲: subprocess.run(['git', 'add', '.'])
-                  subprocess.run(['git', 'commit', '-m', 'Initial architecture and implementation'])
+                  subprocess.run(['git', 'add', '.'])
+                  subprocess.run(['git', 'commit', '-m', 'Initial architecture'])
                   subprocess.run(['git', 'push', '-u', 'origin', 'main'])
-                  
                   print(f'Successfully created {repo_name}')
               else:
                   print('API Error:', create_resp.text)
