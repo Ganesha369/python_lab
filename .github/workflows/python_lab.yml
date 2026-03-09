@@ -1,6 +1,7 @@
-name: Portfolio Architect
+# name: Portfolio Architect
 on:
   schedule:
+    # 4 Times a day during Indian Business Hours (IST)
     - cron: '30 2 * * *'  # ~8:00 AM IST
     - cron: '0 6 * * *'   # ~11:30 AM IST
     - cron: '15 10 * * *' # ~3:45 PM IST
@@ -16,6 +17,9 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install Dependencies
+        run: pip install requests
+
       - name: Professional Generator
         env:
           API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -27,45 +31,69 @@ jobs:
           import json, os, requests, re, time, random, subprocess
           from datetime import datetime
           
-          time.sleep(random.randint(0, 1200))
+          # 1. HUMAN STEALTH: RANDOM DELAY (0 to 30 mins)
+          time.sleep(random.randint(0, 1800))
 
-          topics = ['Fintech', 'HealthTech', 'Cybersecurity', 'Logistics', 'AI-Tools']
-          full_prompt = f'Act as a Senior Architect. Design a unique {random.choice(topics)} Python module. Provide: [NAME]slug-name[/NAME] [DESC]desc[/DESC] [CODE]code[/CODE] [README]readme[/README] [REQS]libs[/REQS]'
+          # 2. PROMPT ROTATION (To avoid repetitive patterns)
+          topics = ['Fintech Asset Tracker', 'HealthTech Patient Portal Backend', 'Cybersecurity Threat Scanner', 'AI-Driven Logistics Optimizer', 'SaaS Subscription Middleware']
+          selected_topic = random.choice(topics)
+          
+          full_prompt = f'Act as a Senior Software Architect. Create a specialized Python project for: {selected_topic}. Provide: [NAME]slug-style-name[/NAME] [DESC]professional-one-sentence-description[/DESC] [CODE]full-python-main-code[/CODE] [README]comprehensive-markdown-readme[/README] [REQS]pip-installable-libraries[/REQS]'
 
           try:
+              # Gemini 3 Flash Preview API Call
               url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
               resp = requests.post(url, json={'contents': [{'parts':[{'text': full_prompt}]}]})
-              text = resp.json()['candidates'][0]['content']['parts'][0]['text']
+              data = resp.json()
+              
+              if 'candidates' not in data:
+                  print('API Error:', data)
+                  exit(1)
+                  
+              text = data['candidates'][0]['content']['parts'][0]['text']
 
+              # PARSING CONTENT
               repo_name = re.search(r'\[NAME\](.*?)\[/NAME\]', text).group(1).strip().lower().replace(' ', '-')
               repo_desc = re.search(r'\[DESC\](.*?)\[/DESC\]', text).group(1).strip()
               code_body = re.search(r'\[CODE\](.*?)\[/CODE\]', text, re.DOTALL).group(1).strip()
               readme_body = re.search(r'\[README\](.*?)\[/README\]', text, re.DOTALL).group(1).strip()
               reqs_list = re.search(r'\[REQS\](.*?)\[/REQS\]', text, re.DOTALL).group(1).strip()
 
-              # MIT License Template
-              license_text = f'MIT License\n\nCopyright (c) {datetime.now().year} Ganesha\n\nPermission is hereby granted, free of charge...'
+              # 3. GENERATE LEGAL LICENSE (MIT)
+              license_text = f'MIT License\n\nCopyright (c) {datetime.now().year} Ganesha\n\nPermission is hereby granted, free of charge, to any person obtaining a copy...'
 
+              # 4. CREATE THE PUBLIC REPO VIA API
               headers = {'Authorization': f'token {os.getenv(\"GH_TOKEN\")}', 'Accept': 'application/vnd.github.v3+json'}
-              create_resp = requests.post('https://api.github.com/user/repos', json={'name': repo_name, 'description': repo_desc, 'private': False}, headers=headers)
+              repo_data = {'name': repo_name, 'description': repo_desc, 'private': False, 'has_issues': True, 'has_wiki': True}
+              create_resp = requests.post('https://api.github.com/user/repos', json=repo_data, headers=headers)
               
               if create_resp.status_code == 201:
                   clone_url = create_resp.json()['clone_url'].replace('https://', f'https://{os.getenv(\"GH_TOKEN\")}@')
-                  os.makedirs(repo_name, exist_ok=True); os.chdir(repo_name)
-                  subprocess.run(['git', 'init', '-b', 'main'])
                   
+                  # 5. LOCAL FOLDER SETUP & GIT INITIALIZATION
+                  os.makedirs(repo_name, exist_ok=True)
+                  os.chdir(repo_name)
+                  subprocess.run(['git', 'init', '-b', 'main'])Write Files
+                # Write Files
                   with open('main.py', 'w') as f: f.write(code_body)
                   with open('README.md', 'w') as f: f.write(readme_body)
                   with open('requirements.txt', 'w') as f: f.write(reqs_list)
                   with open('LICENSE', 'w') as f: f.write(license_text)
                   
+                  # HUMAN IDENTITY OVERRIDE
                   subprocess.run(['git', 'config', '--global', 'user.name', os.getenv(\"MY_NAME\")])
                   subprocess.run(['git', 'config', '--global', 'user.email', os.getenv(\"MY_EMAIL\")])
                   
+                  # PUSH TO NEW REPO
                   subprocess.run(['git', 'remote', 'add', 'origin', clone_url])
                   subprocess.run(['git', 'add', '.'])
-                  subprocess.run(['git', 'commit', '-m', 'Initial project bootstrap with MIT License'])
+                  commit_msgs = ['Initial system architecture', 'Core logic implementation', 'Bootstrap project structure']
+                  subprocess.run(['git', 'commit', '-m', random.choice(commit_msgs)])
                   subprocess.run(['git', 'push', '-u', 'origin', 'main'])
-                  print(f'Done! Created {repo_name}')
-          except Exception as e: print(f'Error: {e}')
+                  
+                  print(f'Done! Created https://github.com/ganesha-am-369/{repo_name}')
+              else:
+                  print(f'Failed to create repo: {create_resp.text}')
+          except Exception as e:
+              print(f'Critical Error: {e}')
           "
