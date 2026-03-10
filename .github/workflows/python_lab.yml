@@ -37,8 +37,8 @@ jobs:
                   # 1. AI Generation
                   prompt = f'Build an SDE-1 Python project for {selected}. Use Streamlit. Use professional Classes and Type Hinting. README must explain Business Problem and Why this DSA is used in companies. Return: [NAME]name[/NAME] [DESC]desc[/DESC] [CODE]code[/CODE] [README]md[/README] [REQS]libs[/REQS]'
                   
-                  # CHANGED: Using strictly gemini-3-flash
-                  url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key={os.getenv(\"API_KEY\")}'
+                  # UPDATED: Specifically using gemini-3-flash-preview
+                  url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
                   resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
                   resp.raise_for_status()
                   text = resp.json()['candidates'][0]['content']['parts'][0]['text']
@@ -54,7 +54,7 @@ jobs:
                   h = {'Authorization': f'token {os.getenv(\"GH_TOKEN\")}', 'Accept': 'application/vnd.github.v3+json'}
                   requests.post('https://api.github.com/user/repos', json={'name': repo_name, 'description': desc}, headers=h).raise_for_status()
                   print('Repo Created. Waiting for GitHub Sync...')
-                  time.sleep(15) 
+                  time.sleep(20)
 
                   # 4. Push Files
                   os.makedirs(repo_name, exist_ok=True); os.chdir(repo_name)
@@ -72,16 +72,13 @@ jobs:
                   subprocess.run(['git', 'commit', '-m', 'SDE-1 Release'])
                   subprocess.run(['git', 'push', '-u', 'origin', 'main', '--force'])
 
-                  # 5. Update Profile Gallery
+                  # 5. Update Profile Gallery (The Error Fix)
                   os.chdir('..')
-                  
-                  # FIXED: Proper line breaks for these commands
                   subprocess.run(['git', 'clone', f'https://x-access-token:{os.getenv(\"GH_TOKEN\")}@github.com/{user}/{user}.git', 'bio'])
                   os.chdir('bio')
                   
                   date_str = datetime.now().strftime('%b %d')
-                  
-                  # FIXED: Safely targeting a specific HTML comment marker instead of an empty string
+                  # Marker preserves location for the next run
                   new_row = f'| {date_str} | [{repo_name}](https://github.com/{user}/{repo_name}) | {desc} |\n'
                   
                   with open('README.md', 'r') as f: content = f.read()
@@ -96,8 +93,7 @@ jobs:
                   else:
                       print('Marker not found in Profile README.')
               except Exception as e:
-                  print(f'Critical Failure: {e}')
-                  exit(1)
+                  print(f'Critical Failure: {e}'); exit(1)
 
           run()
           "
