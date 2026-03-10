@@ -1,4 +1,4 @@
-name: DSA_Architect_SDE1
+name: DSA_SDE1_Architect
 on:
   workflow_dispatch:
   schedule:
@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: "Install Requests"
+      - name: "Install Dependencies"
         run: pip install requests
 
       - name: "Run Project Architect"
@@ -28,37 +28,39 @@ jobs:
           import requests, os, re, subprocess, random, time
           from datetime import datetime
 
-          def run_workflow():
+          def run():
               try:
                   user = 'Ganesha369'
-                  topics = ['Log-Parser-Sliding-Window', 'API-Rate-Limiter', 'LRU-Cache-Manager', 'Priority-Support-Heap']
+                  topics = ['LRU Cache System', 'API Rate Limiter', 'Bank Undo-Redo Stack', 'Inventory Hash-Map Search', 'Priority Task Heap']
                   selected = random.choice(topics)
                   
-                  # 1. AI API CALL
-                  prompt = f'Build an SDE-1 Python project for {selected}. Use Streamlit. Explain logic simply. Return: [NAME]name[/NAME] [DESC]desc[/DESC] [CODE]code[/CODE] [README]md[/README] [REQS]libs[/REQS]'
-                  url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
+                  # 1. AI Generation
+                  prompt = f'Build an SDE-1 Python project for {selected}. Use Streamlit. Use professional Classes and Type Hinting. README must explain Business Problem and Why this DSA is used in companies. Return: [NAME]name[/NAME] [DESC]desc[/DESC] [CODE]code[/CODE] [README]md[/README] [REQS]libs[/REQS]'
+                  
+                  # Note: Ensure this model endpoint matches your actual Google AI Studio access
+                  url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={os.getenv(\"API_KEY\")}'
                   resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
                   resp.raise_for_status()
                   text = resp.json()['candidates'][0]['content']['parts'][0]['text']
 
-                  # 2. PARSE DATA
+                  # 2. Extract Data
                   repo_name = 'dsa-' + re.search(r'\[NAME\](.*?)\[/NAME\]', text, re.DOTALL).group(1).strip().lower().replace(' ', '-') + '-' + str(random.randint(10,99))
                   desc = re.search(r'\[DESC\](.*?)\[/DESC\]', text, re.DOTALL).group(1).strip()
                   code = re.search(r'\[CODE\](.*?)\[/CODE\]', text, re.DOTALL).group(1).strip()
                   readme = re.search(r'\[README\](.*?)\[/README\]', text, re.DOTALL).group(1).strip()
                   reqs = re.search(r'\[REQS\](.*?)\[/REQS\]', text, re.DOTALL).group(1).strip()
 
-                  # 3. CREATE REPO
+                  # 3. Create Remote Repo
                   h = {'Authorization': f'token {os.getenv(\"GH_TOKEN\")}', 'Accept': 'application/vnd.github.v3+json'}
                   requests.post('https://api.github.com/user/repos', json={'name': repo_name, 'description': desc}, headers=h).raise_for_status()
-                  
-                  print('Waiting 20s for GitHub sync...'); time.sleep(20)
+                  print('Repo Created. Waiting for GitHub Sync...')
+                  time.sleep(15) # 15 seconds is usually plenty of time for GitHub
 
-                  # 4. FILES & GIT
+                  # 4. Push Files
                   os.makedirs(repo_name, exist_ok=True); os.chdir(repo_name)
                   with open('main.py', 'w') as f: f.write(code)
                   with open('README.md', 'w') as f: f.write(readme)
-                  with open('requirements.txt', 'w') as f: f.write(reqs)
+                  with open('requirements.txt', 'w') as f: f.write(reqs + '\nstreamlit')
 
                   subprocess.run(['git', 'init', '-b', 'main'])
                   subprocess.run(['git', 'config', 'user.name', user])
@@ -67,22 +69,37 @@ jobs:
                   auth_url = f'https://x-access-token:{os.getenv(\"GH_TOKEN\")}@github.com/{user}/{repo_name}.git'
                   subprocess.run(['git', 'remote', 'add', 'origin', auth_url])
                   subprocess.run(['git', 'add', '.'])
-                  with open('README.md', 'r') as f: content = f.read()
-                  if '' in content:
-                      with open('README.md', 'w') as f: f.write(content.replace('', '\\n' + new_row))
-                      subprocess.run(['git', 'add', '.'])
-                      subprocess.run(['git', 'commit', '-m', 'Sync Gallery'])
-                      subprocess.run(['git', 'push'])
-              except Exception as e:
-                  print(f'Error: {e}'); exit(1)
-
-          run_workflow()
-          "
-                  subprocess.run(['git', 'commit', '-m', 'Initial Setup'])
+                  subprocess.run(['git', 'commit', '-m', 'SDE-1 Release'])
                   subprocess.run(['git', 'push', '-u', 'origin', 'main', '--force'])
 
-                  # 5. UPDATE BIO
+                  # 5. Update Profile Gallery (The Error Fix)
                   os.chdir('..')
+                  
+                  # FIXED: Moved os.chdir('bio') to its own line
                   subprocess.run(['git', 'clone', f'https://x-access-token:{os.getenv(\"GH_TOKEN\")}@github.com/{user}/{user}.git', 'bio'])
                   os.chdir('bio')
-                  new_row = f'| {datetime.now().strftime(\"%b %d\")} | [{repo_name}](https://github.com/{user}/{repo_name}) | {desc} |'
+                  
+                  # Define new_row BEFORE using it
+                  date_str = datetime.now().strftime('%b %d')
+                  
+                  # FIXED: Added the marker back at the end so it can be replaced again tomorrow
+                  new_row = f'| {date_str} | [{repo_name}](https://github.com/{user}/{repo_name}) | {desc} |\n'
+                  
+                  with open('README.md', 'r') as f: content = f.read()
+                  
+                  # FIXED: Look for a specific HTML comment rather than an empty string
+                  if '' in content:
+                      updated_content = content.replace('', new_row)
+                      with open('README.md', 'w') as f: f.write(updated_content)
+                      subprocess.run(['git', 'add', 'README.md'])
+                      subprocess.run(['git', 'commit', '-m', f'Add {repo_name} to gallery'])
+                      subprocess.run(['git', 'push'])
+                      print('Gallery updated successfully!')
+                  else:
+                      print('Marker not found in Profile README.')
+              except Exception as e:
+                  print(f'Critical Failure: {e}')
+                  exit(1)
+
+          run()
+          "
