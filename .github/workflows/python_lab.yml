@@ -1,4 +1,4 @@
-name: DSA_SDE1_Architect
+name: DSA_SDE1_Mentor_Workflow
 on:
   workflow_dispatch:
   schedule:
@@ -10,12 +10,10 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
-
       - name: "Setup Python"
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-
       - name: "Install Dependencies"
         run: pip install requests
 
@@ -31,69 +29,80 @@ jobs:
           def run():
               try:
                   user = 'Ganesha369'
-                  topics = ['LRU Cache System', 'API Rate Limiter', 'Bank Undo-Redo Stack', 'Inventory Hash-Map Search', 'Priority Task Heap']
+                  topics = ['LRU-Cache-Visualizer', 'API-Rate-Limiter', 'Support-Ticket-Heap-Priority', 'Inventory-Hash-Finder']
                   selected = random.choice(topics)
                   
-                  # 1. AI Generation
-                  prompt = f'Build an SDE-1 Python project for {selected}. Use Streamlit. Use professional Classes and Type Hinting. README must explain Business Problem and Why this DSA is used in companies. Return: [NAME]name[/NAME] [DESC]desc[/DESC] [CODE]code[/CODE] [README]md[/README] [REQS]libs[/REQS]'
+                  # 1. AI Generation - Focused on Education
+                  prompt = f'''Build a professional SDE-1 Python project for: {selected}. 
+                  Requirements:
+                  1. CODE: High-quality Streamlit app.
+                  2. README: Professional summary.
+                  3. GUIDE: A beginner-friendly 'GUIDE.md' explaining: 
+                     - The Concept (Why use this DSA?)
+                     - Production Use (How Big Tech uses it?)
+                     - Technical Stack (Why Python/Streamlit?)
+                     - Common Beginner Errors & Fixes.
+                  Return: [NAME]name[/NAME] [DESC]desc[/DESC] [CODE]code[/CODE] [README]md[/README] [GUIDE]guide_md[/GUIDE] [REQS]libs[/REQS]'''
                   
-                  # UPDATED: Specifically using gemini-3-flash-preview
                   url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
                   resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
                   resp.raise_for_status()
                   text = resp.json()['candidates'][0]['content']['parts'][0]['text']
 
                   # 2. Extract Data
-                  repo_name = 'dsa-' + re.search(r'\[NAME\](.*?)\[/NAME\]', text, re.DOTALL).group(1).strip().lower().replace(' ', '-') + '-' + str(random.randint(10,99))
+                  repo_slug = re.search(r'\[NAME\](.*?)\[/NAME\]', text, re.DOTALL).group(1).strip().lower().replace(' ', '-')
+                  repo_name = f'dsa-{repo_slug}-{random.randint(10,99)}'
                   desc = re.search(r'\[DESC\](.*?)\[/DESC\]', text, re.DOTALL).group(1).strip()
-                  code = re.search(r'\[CODE\](.*?)\[/CODE\]', text, re.DOTALL).group(1).strip()
-                  readme = re.search(r'\[README\](.*?)\[/README\]', text, re.DOTALL).group(1).strip()
-                  reqs = re.search(r'\[REQS\](.*?)\[/REQS\]', text, re.DOTALL).group(1).strip()
+                  project_code = re.search(r'\[CODE\](.*?)\[/CODE\]', text, re.DOTALL).group(1).strip()
+                  project_readme = re.search(r'\[README\](.*?)\[/README\]', text, re.DOTALL).group(1).strip()
+                  project_guide = re.search(r'\[GUIDE\](.*?)\[/GUIDE\]', text, re.DOTALL).group(1).strip()
 
-                  # 3. Create Remote Repo
+                  # 3. Create Repo & Activate Pages
                   h = {'Authorization': f'token {os.getenv(\"GH_TOKEN\")}', 'Accept': 'application/vnd.github.v3+json'}
                   requests.post('https://api.github.com/user/repos', json={'name': repo_name, 'description': desc}, headers=h).raise_for_status()
-                  print('Repo Created. Waiting for GitHub Sync...')
                   time.sleep(20)
+                  requests.post(f'https://api.github.com/repos/{user}/{repo_name}/pages', json={'source': {'branch': 'main', 'path': '/'}}, headers=h)
 
-                  # 4. Push Files
+                  # 4. Push Files to Project Repo
                   os.makedirs(repo_name, exist_ok=True); os.chdir(repo_name)
-                  with open('main.py', 'w') as f: f.write(code)
-                  with open('README.md', 'w') as f: f.write(readme)
-                  with open('requirements.txt', 'w') as f: f.write(reqs + '\nstreamlit')
+                  
+                  with open('main.py', 'w') as f: f.write(project_code)
+                  with open('GUIDE.md', 'w') as f: f.write(project_guide)
+                  with open('README.md', 'w') as f: f.write(project_readme + '\n\n## 📘 Learning Guide\nCheck out [GUIDE.md](./GUIDE.md) for a deep dive into the concepts!')
+                  with open('requirements.txt', 'w') as f: f.write('streamlit\nrequests')
+
+                  # 5. Professional HTML for GitHub Pages
+                  html_content = f'<html><head><style>body{{font-family:sans-serif;padding:50px;background:#f4f4f4}} .card{{background:white;padding:30px;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.1)}}</style></head><body><div class=\"card\"><h1>{repo_name}</h1><p>{desc}</p><a href=\"https://ganesha-dsa-hub.streamlit.app/?repo={repo_name}\">Run Live App</a></div></body></html>'
+                  with open('index.html', 'w') as f: f.write(html_content)
 
                   subprocess.run(['git', 'init', '-b', 'main'])
                   subprocess.run(['git', 'config', 'user.name', user])
                   subprocess.run(['git', 'config', 'user.email', 'ganesha.am.369@gmail.com'])
-                  
-                  auth_url = f'https://x-access-token:{os.getenv(\"GH_TOKEN\")}@github.com/{user}/{repo_name}.git'
-                  subprocess.run(['git', 'remote', 'add', 'origin', auth_url])
+                  remote = f'https://x-access-token:{os.getenv(\"GH_TOKEN\")}@github.com/{user}/{repo_name}.git'
+                  subprocess.run(['git', 'remote', 'add', 'origin', remote])
                   subprocess.run(['git', 'add', '.'])
-                  subprocess.run(['git', 'commit', '-m', 'SDE-1 Release'])
+                  subprocess.run(['git', 'commit', '-m', 'SDE-1 Educational Release'])
                   subprocess.run(['git', 'push', '-u', 'origin', 'main', '--force'])
 
-                  # 5. Update Profile Gallery (The Error Fix)
+                  # 6. Clean Update to Profile Gallery (Link ONLY)
                   os.chdir('..')
-                  subprocess.run(['git', 'clone', f'https://x-access-token:{os.getenv(\"GH_TOKEN\")}@github.com/{user}/{user}.git', 'bio'])
-                  os.chdir('bio')
+                  subprocess.run(['git', 'clone', f'https://x-access-token:{os.getenv(\"GH_TOKEN\")}@github.com/{user}/{user}.git', 'profile'])
+                  os.chdir('profile')
                   
-                  date_str = datetime.now().strftime('%b %d')
-                  # Marker preserves location for the next run
-                  new_row = f'| {date_str} | [{repo_name}](https://github.com/{user}/{repo_name}) | {desc} |\n'
+                  hub_link = f'https://ganesha-dsa-hub.streamlit.app/?repo={repo_name}'
+                  pages_link = f'https://{user}.github.io/{repo_name}/'
+                  new_row = f'| {datetime.now().strftime(\"%b %d\")} | [{repo_name}](https://github.com/{user}/{repo_name}) | [🚀 App]({hub_link}) | [📄 Docs]({pages_link}) |'
                   
                   with open('README.md', 'r') as f: content = f.read()
-                  
                   if '' in content:
-                      updated_content = content.replace('', new_row)
-                      with open('README.md', 'w') as f: f.write(updated_content)
+                      updated = content.replace('', '\n' + new_row)
+                      with open('README.md', 'w') as f:
+                          f.write(updated)
                       subprocess.run(['git', 'add', 'README.md'])
-                      subprocess.run(['git', 'commit', '-m', f'Add {repo_name} to gallery'])
+                      subprocess.run(['git', 'commit', '-m', f'Add {repo_name}'])
                       subprocess.run(['git', 'push'])
-                      print('Gallery updated successfully!')
-                  else:
-                      print('Marker not found in Profile README.')
               except Exception as e:
-                  print(f'Critical Failure: {e}'); exit(1)
+                  print(e); exit(1)
 
           run()
           "
