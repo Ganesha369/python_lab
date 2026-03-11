@@ -16,28 +16,20 @@ jobs:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
           python3 -c "
-          import requests, os, subprocess, re, random
+          import requests, os, subprocess, re
 
           def run():
-              # 🎲 Delete this line ONLY for the first force-run
-              if random.random() > 0.20: return
-
+              # FORCE RUN: Random line removed for this first setup
               user = 'Ganesha369'
               
-              # 🎓 The Master Curriculum
+              # 🎓 The Master Curriculum (Simplified Paths for better folder creation)
               curriculum = [
-                  '01-Foundations/01-Syntax-and-Output',
-                  '01-Foundations/02-Variables-and-Data-Types',
-                  '01-Foundations/03-Milestone-Interactive-Story', 
-                  '02-Control-Flow/01-If-Else-Logic',
-                  '02-Control-Flow/02-Loops-For-and-While',
-                  '02-Control-Flow/03-Milestone-Guessing-Game',
-                  '03-Data-Structures/01-Lists-and-Tuples',
-                  '03-Data-Structures/02-Dictionaries-and-Sets',
-                  '03-Data-Structures/03-Milestone-Contact-Book',
-                  '04-Functions/01-Def-and-Scope',
-                  '04-Functions/02-Lambda-and-Args',
-                  '04-Functions/03-Milestone-Math-Library'
+                  '01-Foundations-Syntax-and-Output',
+                  '02-Foundations-Variables-and-Types',
+                  '03-Milestone-Project-Interactive-Story', 
+                  '04-Control-Flow-If-Else-Logic',
+                  '05-Control-Flow-Loops-Deep-Dive',
+                  '06-Milestone-Project-Guessing-Game'
               ]
 
               # Find the next topic
@@ -48,68 +40,57 @@ jobs:
                       break
               
               if not next_topic:
-                  print('Curriculum Complete!')
+                  print('Curriculum Complete or no new topics found.')
                   return
 
-              # 🧠 Dynamic Prompting with INLINE CODE enforcement
-              if 'Milestone' in next_topic:
-                  prompt = f'''Act as a Microsoft SDE-2. Build a beginner-friendly PROJECT for {next_topic}.
-                  Output EXACTLY these tags:
-                  [TITLE]Project Name[/TITLE]
-                  [LESSON]Explain the logic, why we use it, and a step-by-step guide with small code snippets explaining the parts.[/LESSON]
-                  [CODE]Complete runnable Python code for the project[/CODE]'''
-              else:
-                  prompt = f'''Act as a Microsoft SDE-2 teaching a beginner. Teach the concept: {next_topic}.
-                  Output EXACTLY these tags:
-                  [TITLE]Concept Name[/TITLE]
-                  [LESSON]
-                  Format exactly with these headers. YOU MUST INCLUDE PYTHON CODE SNIPPETS UNDER EVERY HEADER:
-                  ## Level 0: The Absolute Basics (Explain like I'm 5, add a 1-line code example)
-                  ## Level 1: Syntax & Simple Examples (Include basic code showing how to use it)
-                  ## Level 2: Edge Cases & Common Mistakes (Show 'Broken Code' vs 'Fixed Code')
-                  ## Level 3: Under the Hood (Memory/Processing explanation with code proving it, like using id() or type())
-                  ## Level 4: SDE-1 Interview Question (A real FAANG question using this concept WITH the solution code)
-                  [/LESSON]
-                  [CODE]Write a single, runnable Python script that combines all the examples from the lesson above. Use print statements to act as a mini-tutorial when executed.[/CODE]'''
+              print(f'Starting build for: {next_topic}')
+
+              # 🧠 SDE-2 Prompt
+              prompt = f'''Act as a Microsoft SDE-2 teaching a beginner. Topic: {next_topic}.
+              If Milestone: Build a project. If not: Teach Level 0-4.
+              YOU MUST INCLUDE PYTHON CODE SNIPPETS IN EVERY SECTION.
+              [TITLE]Project Name[/TITLE]
+              [LESSON]Full tutorial with Level 0 to Level 4 sections and code snippets[/LESSON]
+              [CODE]One single runnable python script[/CODE]'''
 
               url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
               resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
-              text = resp.json()['candidates'][0]['content']['parts'][0]['text']
+              
+              data = resp.json()
+              if 'candidates' not in data:
+                  print('AI Error:', data)
+                  return
+              text = data['candidates'][0]['content']['parts'][0]['text']
 
-              # 🛡️ Safe Parsing
-              def get_tag(tag, default='Processing...'):
+              def get_tag(tag):
                   match = re.search(f'\\[{tag}\\](.*?)\\[/{tag}\\]', text, re.DOTALL)
-                  return match.group(1).strip() if match else default
-                  t_title = get_tag('TITLE', next_topic.split('/')[-1])
+                  return match.group(1).strip() if match else 'Content coming soon...'
+
+              t_title = get_tag('TITLE')
               t_lesson = get_tag('LESSON')
-              t_code = get_tag('CODE', '# Code generation failed.')
+              t_code = get_tag('CODE')
 
-              # Create directories
+              # Create folder and files
               os.makedirs(next_topic, exist_ok=True)
-              live_link = f'https://ganesha-dsa-hub.streamlit.app/?path={next_topic}/main.py'
-              ask_ai = f'https://github.com/{user}/python_lab/discussions/new?category=q-a'
-
+              
               with open(f'{next_topic}/main.py', 'w') as f: f.write(t_code)
               with open(f'{next_topic}/LEARN.md', 'w') as f: 
-                  f.write(f'# {t_title}\n\n[🚀 RUN LIVE OUTPUT]({live_link}) | [🙋 ASK SDE MENTOR]({ask_ai})\n\n{t_lesson}\n\n---\n*Authored by AI SDE-2 Mentor*')
+                  f.write(f'# {t_title}\n\n{t_lesson}')
 
-              # 📚 Generate Clean Table of Contents
-              toc = '# 🎓 The SDE-1 Zero-to-Hero University\n\n> *A progressive learning roadmap from absolute beginner syntax to live backend systems.*\n\n'
-              
-              modules = sorted(list(set([t.split('/')[0] for t in curriculum])))
-              for mod in modules:
-                  toc += f'## 📁 {mod.replace(\"-\", \" \")}\n'
-                  for topic in curriculum:
-                      if topic.startswith(mod) and os.path.exists(topic):
-                          topic_name = topic.split('/')[1].replace('-', ' ')
-                          toc += f'- [{topic_name}](./{topic}/LEARN.md)\n'
+              # 📚 Generate Table of Contents
+              toc = '# 🎓 The SDE-1 Zero-to-Hero University\n\n'
+              for topic in curriculum:
+                  if os.path.exists(topic):
+                      display = topic.replace('-', ' ')
+                      toc += f'- [{display}](./{topic}/LEARN.md)\n'
 
               with open('README.md', 'w') as f: f.write(toc)
 
+              # Git Push
               subprocess.run(['git', 'config', 'user.name', user])
               subprocess.run(['git', 'config', 'user.email', 'ganesha.am.369@gmail.com'])
               subprocess.run(['git', 'add', '.'])
-              subprocess.run(['git', 'commit', '-m', f'Mentorship Update: {next_topic}'])
+              subprocess.run(['git', 'commit', '-m', f'Update: {next_topic}'])
               subprocess.run(['git', 'push'])
           run()
           "
