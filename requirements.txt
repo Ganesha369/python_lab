@@ -1,0 +1,16 @@
+# --- Core Framework ---
+streamlit
+requests
+
+# --- Data & Math (Essential for DSA/AI) ---
+pandas
+numpy
+matplotlib
+
+# --- AI & Text Processing (For AI Lab) ---
+google-generativeai
+tiktoken
+
+# --- Visuals & Progress ---
+plotly
+streamlit-lottie
