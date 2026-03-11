@@ -2,11 +2,13 @@ name: SDE_University_Mentor_Edition
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *" 
+    - cron: "0 5,10,16,21 * * *" # Runs 4 times a day for consistency
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -16,81 +18,74 @@ jobs:
           GH_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         run: |
           python3 -c "
-          import requests, os, subprocess, re
+          import requests, os, subprocess, re, random
 
           def run():
-              # FORCE RUN: Random line removed for this first setup
               user = 'Ganesha369'
+              repo = 'Python_DSA_Lab'
               
-              # 🎓 The Master Curriculum (Simplified Paths for better folder creation)
-              curriculum = [
-                  '01-Foundations-Syntax-and-Output',
-                  '02-Foundations-Variables-and-Types',
-                  '03-Milestone-Project-Interactive-Story', 
-                  '04-Control-Flow-If-Else-Logic',
-                  '05-Control-Flow-Loops-Deep-Dive',
-                  '06-Milestone-Project-Guessing-Game'
-              ]
+              # 🎓 The Master DSA Curriculum (30 Projects)
+              curr = ['01-Basics-Big-O-Notation', '02-Basics-Time-and-Space-Complexity', '03-Arrays-Introduction-and-Indexing', '04-Arrays-Common-Operations', '05-Strings-Manipulation-Techniques', '06-Milestone-The-Anagram-Checker', '07-Linked-Lists-Singly-Linked', '08-Linked-Lists-Doubly-Linked', '09-Stacks-Last-In-First-Out', '10-Queues-First-In-First-Out', '11-Recursion-The-Mirror-Logic', '12-Milestone-Building-a-Undo-Redo-System', '13-Sorting-Bubble-and-Insertion', '14-Sorting-Quick-and-Merge', '15-Searching-Binary-vs-Linear', '16-Hashing-Dictionaries-and-Hash-Maps', '17-Trees-Binary-Search-Trees', '18-Trees-Traversals-DFS-BFS', '19-Heaps-Max-and-Min-Heap', '20-Milestone-The-Task-Priority-Queue', '21-Graphs-Adjacency-Lists', '22-Graphs-Breadth-First-Search', '23-Graphs-Depth-First-Search', '24-Graphs-Shortest-Path-Dijkstra', '25-DP-Memoization-Basics', '26-DP-Tabulation-Techniques', '27-Backtracking-Solving-Mazes', '28-Bit-Manipulation-Magic', '29-Advanced-Sliding-Window', '30-Final-Capstone-The-Algorithm-Visualizer']
 
-              # Find the next topic
-              next_topic = None
-              for topic in curriculum:
-                  if not os.path.exists(topic):
-                      next_topic = topic
-                      break
-              
-              if not next_topic:
-                  print('Curriculum Complete or no new topics found.')
-                  return
+              # Logic for 3-4 concepts daily
+              to_gen = [t for t in curr if not os.path.exists(t)][:4]
+              if not to_gen: return
 
-              print(f'Starting build for: {next_topic}')
+              for next_topic in to_gen:
+                  # Dice probability for human-like timing
+                  if random.random() > 0.85: continue 
 
-              # 🧠 SDE-2 Prompt
-              prompt = f'''Act as a Microsoft SDE-2 teaching a beginner. Topic: {next_topic}.
-              If Milestone: Build a project. If not: Teach Level 0-4.
-              YOU MUST INCLUDE PYTHON CODE SNIPPETS IN EVERY SECTION.
-              [TITLE]Project Name[/TITLE]
-              [LESSON]Full tutorial with Level 0 to Level 4 sections and code snippets[/LESSON]
-              [CODE]One single runnable python script[/CODE]'''
+                  prompt = f'''Act as a Microsoft SDE-2 teaching a 12-year-old student. Topic: {next_topic}.
+                  1. SIMPLE DEFINITION: Use a fun analogy (like a pile of plates for a Stack).
+                  2. REAL WORLD: How does a company like Google or Amazon use this logic?
+                  3. THE TOOLS: Explain every library or logic block used.
+                  4. THE LESSON: Level 0 to Level 4 guide with code snippets included.
+                  
+                  Format using tags:
+                  [TITLE]Catchy Student Title[/TITLE]
+                  [DESC]One-sentence summary for a beginner[/DESC]
+                  [LESSON]Detailed tutorial with code examples and analogies[/LESSON]
+                  [CODE]Full runnable Streamlit script[/CODE]'''
 
-              url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
-              resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
-              
-              data = resp.json()
-              if 'candidates' not in data:
-                  print('AI Error:', data)
-                  return
-              text = data['candidates'][0]['content']['parts'][0]['text']
+                  url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
+                  resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
+                  
+                  try:
+                      text = resp.json()['candidates'][0]['content']['parts'][0]['text']
+                      def get_tag(tag):
+                          m = re.search(f'\\[{tag}\\](.*?)\\[/{tag}\\]', text, re.DOTALL)
+                          return m.group(1).strip() if m else ''
 
-              def get_tag(tag):
-                  match = re.search(f'\\[{tag}\\](.*?)\\[/{tag}\\]', text, re.DOTALL)
-                  return match.group(1).strip() if match else 'Content coming soon...'
-
-              t_title = get_tag('TITLE')
-              t_lesson = get_tag('LESSON')
-              t_code = get_tag('CODE')
-
-              # Create folder and files
-              os.makedirs(next_topic, exist_ok=True)
-              
-              with open(f'{next_topic}/main.py', 'w') as f: f.write(t_code)
-              with open(f'{next_topic}/LEARN.md', 'w') as f: 
-                  f.write(f'# {t_title}\n\n{t_lesson}')
-
-              # 📚 Generate Table of Contents
+                      t_title, t_desc, t_lesson, t_code = get_tag('TITLE'), get_tag('DESC'), get_tag('LESSON'), get_tag('CODE')
+                      
+                      os.makedirs(next_topic, exist_ok=True)
+                      open(f'{next_topic}/main.py', 'w').write(t_code)
+                      link = f'https://ganesha-dsa-lab.streamlit.app/?path={next_topic}'
+                      
+                      with open(f'{next_topic}/LEARN.md', 'w') as f: 
+                          f.write(f'# {t_title}\n\nSummary: {t_desc}\n\n### [🚀 CHECK LIVE RESULT]({link})\n\n---\n\n{t_lesson}\n\n### 🐍 Full Code\n`python\n{t_code}\n```')
+                  except: continue
+                  
+                  # 📚 STRUCTURED README GENERATION
               toc = '# 🎓 The SDE-1 Zero-to-Hero University\n\n'
-              for topic in curriculum:
+              for topic in curr:
                   if os.path.exists(topic):
-                      display = topic.replace('-', ' ')
-                      toc += f'- [{display}](./{topic}/LEARN.md)\n'
+                      summary = 'Master this DSA concept.'
+                      try:
+                          with open(f'{topic}/LEARN.md', 'r') as f:
+                              lines = f.readlines()
+                              summary = lines[2].replace(\"Summary: \", \"\").strip()
+                      except: pass
+                      
+                      live_link = f'https://ganesha-dsa-lab.streamlit.app/?path={topic}'
+                      toc += f'- [{topic.replace(\"-\", \" \")}]({topic}/LEARN.md)\n  *{summary}*\n  [▶️ Live Output]({live_link})\n\n<br>\n\n'
 
               with open('README.md', 'w') as f: f.write(toc)
 
-              # Git Push
               subprocess.run(['git', 'config', 'user.name', user])
               subprocess.run(['git', 'config', 'user.email', 'ganesha.am.369@gmail.com'])
               subprocess.run(['git', 'add', '.'])
-              subprocess.run(['git', 'commit', '-m', f'Update: {next_topic}'])
-              subprocess.run(['git', 'push'])
+              subprocess.run(['git', 'commit', '-m', f'University Update: {to_gen[0]}'])
+              subprocess.run(['git', 'push', '--force'])
           run()
           "
