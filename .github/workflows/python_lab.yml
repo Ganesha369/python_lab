@@ -20,7 +20,7 @@ jobs:
           from datetime import datetime
 
           def run():
-              if random.random() > 0.20: return
+              
 
               user = 'Ganesha369'
               roadmap = ['01-Python-Syntax', '02-Loops-Logic', '03-Lists-Tuples', '04-Dictionaries-JSON', '05-Functions-APIs', '06-Arrays-Hashing', '07-FastAPI-Backends', '10-Linked-Lists', '12-Trees-Graphs']
