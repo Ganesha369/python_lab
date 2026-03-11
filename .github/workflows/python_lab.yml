@@ -1,4 +1,4 @@
-name: DSA_SDE1_Final_Verification
+name: DSA_SDE1_Final_Master
 on:
   workflow_dispatch:
 
@@ -25,49 +25,67 @@ jobs:
           from datetime import datetime
 
           def run():
-              user = 'Ganesha369'
-              # 1. AI Content Generation
-              prompt = 'Build a professional Streamlit DSA project. Return: [NAME]name[/NAME] [DESC]desc[/DESC] [CODE]code[/CODE] [README]md[/README] [GUIDE]guide[/GUIDE]'
-              url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
-              resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
-              text = resp.json()['candidates'][0]['content']['parts'][0]['text']
+              try:
+                  user = 'Ganesha369'
+                  # 1. AI Generation - Mentorship Focus
+                  prompt = 'Build a Streamlit DSA project. Return tags: [NAME]name[/NAME] [DESC]desc[/DESC] [CODE]code[/CODE] [README]md[/README] [GUIDE]guide[/GUIDE]'
+                  url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
+                  resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
+                  text = resp.json()['candidates'][0]['content']['parts'][0]['text']
 
-              # 2. Parse Data
-              name = re.search(r'\[NAME\](.*?)\[/NAME\]', text, re.DOTALL).group(1).strip().lower().replace(' ', '-')
-              repo_name = f'dsa-{name}-{random.randint(10,99)}'
-              code = re.search(r'\[CODE\](.*?)\[/CODE\]', text, re.DOTALL).group(1).strip()
-              readme = re.search(r'\[README\](.*?)\[/README\]', text, re.DOTALL).group(1).strip()
+                  # 2. Extract & SANITIZE Name (Fixes the 1000246410.jpg error)
+                  raw_name = re.search(r'\[NAME\](.*?)\[/NAME\]', text, re.DOTALL).group(1).strip()
+                  # Remove everything except letters, numbers, and hyphens
+                  clean_name = re.sub(r'[^a-zA-Z0-9-]', '', raw_name.replace(' ', '-')).lower()
+                  repo_name = f'dsa-{clean_name}-{random.randint(10,99)}'
+                  
+                  desc = re.search(r'\[DESC\](.*?)\[/DESC\]', text, re.DOTALL).group(1).strip()
+                  code = re.search(r'\[CODE\](.*?)\[/CODE\]', text, re.DOTALL).group(1).strip()
+                  readme = re.search(r'\[README\](.*?)\[/README\]', text, re.DOTALL).group(1).strip()
+                  guide = re.search(r'\[GUIDE\](.*?)\[/GUIDE\]', text, re.DOTALL).group(1).strip()
 
-              # 3. Create Repo via API
-              h = {'Authorization': f'token {os.getenv(\"GH_TOKEN\")}', 'Accept': 'application/vnd.github.v3+json'}
-              requests.post('https://api.github.com/user/repos', json={'name': repo_name}, headers=h).raise_for_status()
-              print(f'Created {repo_name}. Waiting for sync...')
-              time.sleep(15)
+                  # 3. Create Repo & Setup Pages
+                  h = {'Authorization': f'token {os.getenv(\"GH_TOKEN\")}', 'Accept': 'application/vnd.github.v3+json'}
+                  requests.post('https://api.github.com/user/repos', json={'name': repo_name, 'description': desc}, headers=h).raise_for_status()
+                  time.sleep(15)
+                  requests.post(f'https://api.github.com/repos/{user}/{repo_name}/pages', json={'source': {'branch': 'main', 'path': '/'}}, headers=h)
 
-              # 4. Git Operations - FORCING MAIN BRANCH
-              os.makedirs('temp_repo', exist_ok=True); os.chdir('temp_repo')
-              subprocess.run(['git', 'init', '-b', 'main'])
-              
-              # CREATE FILES
-              with open('main.py', 'w') as f: f.write(code)
-              with open('README.md', 'w') as f: f.write(readme)
-              with open('requirements.txt', 'w') as f: f.write('streamlit')
+                  # 4. Push Files to Project Repo
+                  os.makedirs('temp_deploy', exist_ok=True); os.chdir('temp_deploy')
+                  subprocess.run(['git', 'init', '-b', 'main'])
+                  
+                  with open('main.py', 'w') as f: f.write(code)
+                  with open('GUIDE.md', 'w') as f: f.write(guide)
+                  with open('README.md', 'w') as f: f.write(f'# {repo_name}\n\n{readme}\n\n[Check the Guide](./GUIDE.md)')
+                  with open('requirements.txt', 'w') as f: f.write('streamlit\nrequests')
+                  
+                  # Professional HTML for Pages
+                  html = f'<html><body style=\"font-family:sans-serif;padding:40px;\"><h1>{repo_name}</h1><p>{desc}</p><a href=\"https://ganesha-dsa-hub.streamlit.app/?repo={repo_name}\">Run App</a></body></html>'
+                  with open('index.html', 'w') as f: f.write(html)
 
-              # CONFIGURE & PUSH
-              subprocess.run(['git', 'config', 'user.name', user])
-              subprocess.run(['git', 'config', 'user.email', 'ganesha.am.369@gmail.com'])
-              auth_url = f'https://x-access-token:{os.getenv(\"GH_TOKEN\")}@github.com/{user}/{repo_name}.git'
-              subprocess.run(['git', 'remote', 'add', 'origin', auth_url])
-              subprocess.run(['git', 'add', '.'])
-              subprocess.run(['git', 'commit', '-m', 'SDE-1 Release'])
-              
-              # Force push to 'main'
-              result = subprocess.run(['git', 'push', '-u', 'origin', 'main', '--force'], capture_output=True, text=True)
-              print(result.stdout)
-              if result.returncode != 0:
-                  print(f'PUSH FAILED: {result.stderr}')
-                  exit(1)
+                  subprocess.run(['git', 'config', 'user.name', user])
+                  subprocess.run(['git', 'config', 'user.email', 'ganesha.am.369@gmail.com'])
+                  remote = f'https://x-access-token:{os.getenv(\"GH_TOKEN\")}@github.com/{user}/{repo_name}.git'
+                  subprocess.run(['git', 'remote', 'add', 'origin', remote])
+                  subprocess.run(['git', 'add', '.'])
+                  subprocess.run(['git', 'commit', '-m', 'SDE-1 Release'])
+                  subprocess.run(['git', 'push', '-u', 'origin', 'main', '--force'])
 
-              print('Successfully pushed to main branch!')
+                  # 5. Clean Update to Profile Gallery
+                  os.chdir('..')
+                  subprocess.run(['git', 'clone', f'https://x-access-token:{os.getenv(\"GH_TOKEN\")}@github.com/{user}/{user}.git', 'profile'])
+                  os.chdir('profile')
+                  
+                  row = f'| {datetime.now().strftime(\"%b %d\")} | [{repo_name}](https://github.com/{user}/{repo_name}) | [🚀 App](https://ganesha-dsa-hub.streamlit.app/?repo={repo_name}) | [📄 Docs](https://{user}.github.io/{repo_name}/) |'
+                  
+                  with open('README.md', 'r') as f: content = f.read()
+                  if '' in content:
+                      with open('README.md', 'w') as f:
+                          f.write(content.replace('', '\n' + row))
+                      subprocess.run(['git', 'add', 'README.md'])
+                      subprocess.run(['git', 'commit', '-m', f'Add {repo_name}'])
+                      subprocess.run(['git', 'push'])
+              except Exception as e:
+                  print(f'Critical Error: {e}'); exit(1)
           run()
           "
