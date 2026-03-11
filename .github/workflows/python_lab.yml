@@ -29,19 +29,12 @@ jobs:
               current_module = next((s for s in roadmap if not any(s in f for f in existing)), roadmap[-1])
 
               for level in range(1, 5):
-                  # The prompt now FORCES explanation of JSON, FastAPI, and API logic
-                  prompt = f'''Act as a Senior SDE. Build Level-{level} for {current_module}.
-                  If Level > 2, you MUST integrate and explain:
-                  - JSON: How data is structured.
-                  - FastAPI/APIs: How the backend communicates.
-                  - RE-USE: How this mixes with previous concepts.
-                  Return: [NAME]name[/NAME] [WHY]Real-World-Example[/WHY] [TECH]Stack-with-Backend-Details[/TECH] [GUIDE]Beginner-Deep-Dive[/GUIDE] [CODE]Python-Code[/CODE]'''
+                  prompt = f'Senior SDE: Build Level-{level} for {current_module}. If Level > 2, explain JSON, FastAPI/APIs, and Backend logic. Return: [NAME]name[/NAME] [WHY]why[/WHY] [TECH]tech[/TECH] [GUIDE]guide[/GUIDE] [CODE]code[/CODE]'
                   
                   url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={os.getenv(\"API_KEY\")}'
                   resp = requests.post(url, json={'contents': [{'parts':[{'text': prompt}]}]})
                   text = resp.json()['candidates'][0]['content']['parts'][0]['text']
 
-                  # Parsing
                   n = re.search(r'\[NAME\](.*?)\[/NAME\]', text, re.DOTALL).group(1).strip().replace(' ', '-')
                   w = re.search(r'\[WHY\](.*?)\[/WHY\]', text, re.DOTALL).group(1).strip()
                   t = re.search(r'\[TECH\](.*?)\[/TECH\]', text, re.DOTALL).group(1).strip()
@@ -51,26 +44,29 @@ jobs:
                   path = f'{current_module}/{n}-Level-{level}'
                   os.makedirs(path, exist_ok=True)
                   live_link = f'https://ganesha-dsa-hub.streamlit.app/?path={path}/main.py'
-                  
-                  # 💡 Adding Request & Star buttons
                   request_url = f'https://github.com/{user}/python_lab/issues/new?title=Request:+New+Concept+Idea'
 
                   with open(f'{path}/main.py', 'w') as f: f.write(c)
                   with open(f'{path}/LEARN.md', 'w') as f: 
                       f.write(f'# {n} (Level {level})\n\n[🚀 RUN LIVE]({live_link}) | [💡 REQUEST TOPIC]({request_url})\n\n### 🏢 Real-World Use\n{w}\n\n### 🛠️ Backend & Tech Stack\n{t}\n\n### 📘 Step-by-Step Breakdown\n{g}')
 
-              # Update TOC
+              # --- FIXED TOC LOGIC (Avoids f-string nested quotes) ---
               toc = '# 🐍 Python SDE-1 University\n\n## 🎓 Course Roadmap\n'
-              for folder in sorted([f for f in os.listdir('.') if os.path.isdir(f) and not f.startswith('.')]):
-                  toc += f'### 📁 {folder}\n'
-                  for sub in sorted(os.listdir(folder)):
-                      toc += f'- [Level {sub[-1]}: {sub.replace("-", " ")}](./{folder}/{sub}/LEARN.md)\n'
+              folders = sorted([f for f in os.listdir('.') if os.path.isdir(f) and not f.startswith('.')])
+              for folder in folders:
+                  toc += '\n### 📁 ' + folder + '\n'
+                  subs = sorted(os.listdir(folder))
+                  for sub in subs:
+                      level_num = sub[-1]
+                      display_name = sub.replace('-', ' ')
+                      toc += '- [Level ' + level_num + ': ' + display_name + '](./' + folder + '/' + sub + '/LEARN.md)\n'
+              
               with open('README.md', 'w') as f: f.write(toc)
 
               subprocess.run(['git', 'config', 'user.name', user])
               subprocess.run(['git', 'config', 'user.email', 'ganesha.am.369@gmail.com'])
               subprocess.run(['git', 'add', '.'])
-              subprocess.run(['git', 'commit', '-m', f'Module {current_module} Deployed'])
+              subprocess.run(['git', 'commit', '-m', 'Module Update: ' + current_module])
               subprocess.run(['git', 'push'])
           run()
           "
