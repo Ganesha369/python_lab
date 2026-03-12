@@ -12,9 +12,21 @@
 
 <br>
 
+- [04 Arrays Common Operations](04-Arrays-Common-Operations/LEARN.md)
+  *Learn how to manage a row of items by reading, swapping, adding, and finding things—exactly how your favorite apps handle your data!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=04-Arrays-Common-Operations)
+
+<br>
+
 - [05 Strings Manipulation Techniques](05-Strings-Manipulation-Techniques/LEARN.md)
   *Learn how to treat words like LEGO bricks—cutting, flipping, and gluing them to build awesome apps!*
   [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=05-Strings-Manipulation-Techniques)
+
+<br>
+
+- [06 Milestone The Anagram Checker](06-Milestone-The-Anagram-Checker/LEARN.md)
+  *Learn how to tell if two words are secret twins by breaking them down into their "DNA" using Python!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=06-Milestone-The-Anagram-Checker)
 
 <br>
 
