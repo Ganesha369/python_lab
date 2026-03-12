@@ -36,6 +36,12 @@
 
 <br>
 
+- [07 Linked Lists Singly Linked](07-Linked-Lists-Singly-Linked/LEARN.md)
+  *A Linked List is like a scavenger hunt where each clue tells you where the next secret box is hidden.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=07-Linked-Lists-Singly-Linked)
+
+<br>
+
 - [08 Linked Lists Doubly Linked](08-Linked-Lists-Doubly-Linked/LEARN.md)
   *A special type of data chain where every "car" knows exactly who is in front of them AND who is behind them, making it easy to move in both directions!*
   [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=08-Linked-Lists-Doubly-Linked)
@@ -45,6 +51,18 @@
 - [09 Stacks Last In First Out](09-Stacks-Last-In-First-Out/LEARN.md)
   **
   [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=09-Stacks-Last-In-First-Out)
+
+<br>
+
+- [11 Recursion The Mirror Logic](11-Recursion-The-Mirror-Logic/LEARN.md)
+  *Recursion is like a "Function Mirror" where a task solves itself by breaking into smaller versions of the same task until it hits a tiny, simple answer.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=11-Recursion-The-Mirror-Logic)
+
+<br>
+
+- [12 Milestone Building a Undo Redo System](12-Milestone-Building-a-Undo-Redo-System/LEARN.md)
+  *Learn how to build a system that lets users travel back in time to fix mistakes, just like your favorite text editor!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=12-Milestone-Building-a-Undo-Redo-System)
 
 <br>
 
