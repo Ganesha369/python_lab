@@ -12,6 +12,12 @@
 
 <br>
 
+- [03 Arrays Introduction and Indexing](03-Arrays-Introduction-and-Indexing/LEARN.md)
+  *Arrays are like a row of lockers where you can store your favorite items in a specific order using numbers called "indices."*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=03-Arrays-Introduction-and-Indexing)
+
+<br>
+
 - [04 Arrays Common Operations](04-Arrays-Common-Operations/LEARN.md)
   *Learn how to manage a row of items by reading, swapping, adding, and finding things—exactly how your favorite apps handle your data!*
   [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=04-Arrays-Common-Operations)
@@ -27,6 +33,18 @@
 - [06 Milestone The Anagram Checker](06-Milestone-The-Anagram-Checker/LEARN.md)
   *Learn how to tell if two words are secret twins by breaking them down into their "DNA" using Python!*
   [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=06-Milestone-The-Anagram-Checker)
+
+<br>
+
+- [08 Linked Lists Doubly Linked](08-Linked-Lists-Doubly-Linked/LEARN.md)
+  *A special type of data chain where every "car" knows exactly who is in front of them AND who is behind them, making it easy to move in both directions!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=08-Linked-Lists-Doubly-Linked)
+
+<br>
+
+- [09 Stacks Last In First Out](09-Stacks-Last-In-First-Out/LEARN.md)
+  **
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=09-Stacks-Last-In-First-Out)
 
 <br>
 
