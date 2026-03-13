@@ -102,3 +102,27 @@
 
 <br>
 
+- [18 Trees Traversals DFS BFS](18-Trees-Traversals-DFS-BFS/LEARN.md)
+  *Learn how to navigate a "Tree" of data using two secret techniques that computers use to find everything from your friends on TikTok to the fastest route on Google Maps.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=18-Trees-Traversals-DFS-BFS)
+
+<br>
+
+- [19 Heaps Max and Min Heap](19-Heaps-Max-and-Min-Heap/LEARN.md)
+  *A Heap is like a VIP leaderboard that always keeps the most important person (the largest or smallest number) right at the very top!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=19-Heaps-Max-and-Min-Heap)
+
+<br>
+
+- [20 Milestone The Task Priority Queue](20-Milestone-The-Task-Priority-Queue/LEARN.md)
+  *Learn how to build a smart "To-Do List" that automatically puts the most important tasks at the front of the line, just like a VIP at a theme park!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=20-Milestone-The-Task-Priority-Queue)
+
+<br>
+
+- [21 Graphs Adjacency Lists](21-Graphs-Adjacency-Lists/LEARN.md)
+  *Learn how to organize a web of friends, cities, or computers using the "Adjacency List"—the most efficient way to store connections!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=21-Graphs-Adjacency-Lists)
+
+<br>
+
