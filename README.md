@@ -84,3 +84,21 @@
 
 <br>
 
+- [15 Searching Binary vs Linear](15-Searching-Binary-vs-Linear/LEARN.md)
+  *Learn how computers find a needle in a haystack—either by checking every straw or by using a "High-Low" math trick to find it 100x faster!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=15-Searching-Binary-vs-Linear)
+
+<br>
+
+- [16 Hashing Dictionaries and Hash Maps](16-Hashing-Dictionaries-and-Hash-Maps/LEARN.md)
+  *Hash Maps are like a super-powered library where you don't have to look through shelves; you just say a book's name, and it instantly teleports into your hand.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=16-Hashing-Dictionaries-and-Hash-Maps)
+
+<br>
+
+- [17 Trees Binary Search Trees](17-Trees-Binary-Search-Trees/LEARN.md)
+  *A Binary Search Tree is like a super-organized library where every book knows exactly where it belongs, making it lightning-fast to find your favorite story.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=17-Trees-Binary-Search-Trees)
+
+<br>
+
