@@ -54,6 +54,12 @@
 
 <br>
 
+- [10 Queues First In First Out](10-Queues-First-In-First-Out/LEARN.md)
+  *Learn how to organize data like a pro by building a "First-Come, First-Served" system used by the world's biggest tech companies.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=10-Queues-First-In-First-Out)
+
+<br>
+
 - [11 Recursion The Mirror Logic](11-Recursion-The-Mirror-Logic/LEARN.md)
   *Recursion is like a "Function Mirror" where a task solves itself by breaking into smaller versions of the same task until it hits a tiny, simple answer.*
   [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=11-Recursion-The-Mirror-Logic)
@@ -63,6 +69,18 @@
 - [12 Milestone Building a Undo Redo System](12-Milestone-Building-a-Undo-Redo-System/LEARN.md)
   *Learn how to build a system that lets users travel back in time to fix mistakes, just like your favorite text editor!*
   [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=12-Milestone-Building-a-Undo-Redo-System)
+
+<br>
+
+- [13 Sorting Bubble and Insertion](13-Sorting-Bubble-and-Insertion/LEARN.md)
+  *Learn how to teach your computer to organize a messy room of numbers using two classic "smart" methods!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=13-Sorting-Bubble-and-Insertion)
+
+<br>
+
+- [14 Sorting Quick and Merge](14-Sorting-Quick-and-Merge/LEARN.md)
+  *Learn how to organize messy data into a perfect line using the same "split-and-win" tricks used by engineers at Microsoft and Amazon.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=14-Sorting-Quick-and-Merge)
 
 <br>
 
