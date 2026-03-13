@@ -126,3 +126,21 @@
 
 <br>
 
+- [22 Graphs Breadth First Search](22-Graphs-Breadth-First-Search/LEARN.md)
+  *BFS is like dropping a stone in a pond: you explore everything right next to you before moving out to the next circle.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=22-Graphs-Breadth-First-Search)
+
+<br>
+
+- [23 Graphs Depth First Search](23-Graphs-Depth-First-Search/LEARN.md)
+  *Learn how to explore a digital world by going as deep as possible into one path before ever turning back—just like a professional explorer!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=23-Graphs-Depth-First-Search)
+
+<br>
+
+- [25 DP Memoization Basics](25-DP-Memoization-Basics/LEARN.md)
+  *Memoization is like having a magic notebook where you write down the answers to hard math problems so you never have to do the same work twice.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=25-DP-Memoization-Basics)
+
+<br>
+
