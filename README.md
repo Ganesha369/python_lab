@@ -138,9 +138,33 @@
 
 <br>
 
+- [24 Graphs Shortest Path Dijkstra](24-Graphs-Shortest-Path-Dijkstra/LEARN.md)
+  *Learn how to find the fastest route through a maze of paths using the same logic Google Maps uses to get you to school on time.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=24-Graphs-Shortest-Path-Dijkstra)
+
+<br>
+
 - [25 DP Memoization Basics](25-DP-Memoization-Basics/LEARN.md)
   *Memoization is like having a magic notebook where you write down the answers to hard math problems so you never have to do the same work twice.*
   [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=25-DP-Memoization-Basics)
+
+<br>
+
+- [26 DP Tabulation Techniques](26-DP-Tabulation-Techniques/LEARN.md)
+  *Tabulation is like filling out a cheat-sheet table from the bottom up so you never have to solve the same math problem twice!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=26-DP-Tabulation-Techniques)
+
+<br>
+
+- [27 Backtracking Solving Mazes](27-Backtracking-Solving-Mazes/LEARN.md)
+  *Learn how to teach a computer to explore a maze, hit a dead end, and "rewind" time to find the right path using the power of Backtracking.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=27-Backtracking-Solving-Mazes)
+
+<br>
+
+- [28 Bit Manipulation Magic](28-Bit-Manipulation-Magic/LEARN.md)
+  *Learn how to talk to computers using their native tongue—0s and 1s—to perform "magic" tricks that make code run at superhero speeds.*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=28-Bit-Manipulation-Magic)
 
 <br>
 
