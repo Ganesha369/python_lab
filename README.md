@@ -168,3 +168,15 @@
 
 <br>
 
+- [29 Advanced Sliding Window](29-Advanced-Sliding-Window/LEARN.md)
+  *Learn how to find the perfect "stretch" of data in a massive list without checking every single possibility twice!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=29-Advanced-Sliding-Window)
+
+<br>
+
+- [30 Final Capstone The Algorithm Visualizer](30-Final-Capstone-The-Algorithm-Visualizer/LEARN.md)
+  *We are going to build a tool that slows down time so you can watch a computer's "brain" organize a messy pile of numbers into a perfect line!*
+  [▶️ Live Output](https://ganesha-dsa-lab.streamlit.app/?path=30-Final-Capstone-The-Algorithm-Visualizer)
+
+<br>
+
